@@ -1,2 +1,7 @@
-app/data/volatility.json filter=lfs diff=lfs merge=lfs -text
-app/data/weights_*.json filter=lfs diff=lfs merge=lfs -text
+# Auto-detect text files and perform LF normalization
+* text=auto
+
+# If you ever have large binaries (images, audio, etc.), track them like:
+*.png filter=lfs diff=lfs merge=lfs -text
+*.mp4 filter=lfs diff=lfs merge=lfs -text
+

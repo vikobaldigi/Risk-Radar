@@ -10,7 +10,7 @@ eggs/
 *.egg-info/
 *.egg
 
-# Virtual environment
+# Virtual environment directories
 env/
 venv/
 ENV/
@@ -20,22 +20,24 @@ Pipfile.lock
 # Flask instance folder
 instance/
 
-# SQLite database
-*.db
+# SQLite database file
 app/database/riskradar.db
 
-# VSCode / IDE
+# Generated JSON exports (local only)
+app/data/
+
+# VSCode / JetBrains IDE settings
 .vscode/
 *.code-workspace
 .idea/
 
-# macOS
+# macOS system files
 .DS_Store
 
 # Jupyter Notebook checkpoints
 .ipynb_checkpoints/
 
-# pytest
+# pytest cache
 .pytest_cache/
 
 # Logs
@@ -47,12 +49,10 @@ htmlcov/
 coverage.xml
 *.cover
 
-# node modules (if you ever add frontend tooling)
+# Node modules (if using frontend tooling)
 node_modules/
 
-# Miscellaneous
+# Miscellaneous editor temp files
 *.swp
 *.swo
 *.tmp
-app/data/volatility.json
-app/data/weights_*.json

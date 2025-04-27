@@ -54,3 +54,5 @@ node_modules/
 *.swp
 *.swo
 *.tmp
+app/data/volatility.json
+app/data/weights_*.json

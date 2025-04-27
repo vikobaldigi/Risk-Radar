@@ -1,0 +1,56 @@
+# Byte‐compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+build/
+dist/
+eggs/
+*.egg-info/
+*.egg
+
+# Virtual environment
+env/
+venv/
+ENV/
+.venv/
+Pipfile.lock
+
+# Flask instance folder
+instance/
+
+# SQLite database
+*.db
+app/database/riskradar.db
+
+# VSCode / IDE
+.vscode/
+*.code-workspace
+.idea/
+
+# macOS
+.DS_Store
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# pytest
+.pytest_cache/
+
+# Logs
+*.log
+
+# Coverage reports
+htmlcov/
+.coverage
+coverage.xml
+*.cover
+
+# node modules (if you ever add frontend tooling)
+node_modules/
+
+# Miscellaneous
+*.swp
+*.swo
+*.tmp

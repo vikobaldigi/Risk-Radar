@@ -2,8 +2,6 @@
 
 **Risk Radar** is a Python-based financial risk analyzer designed to track and visualize volatility across stocks, indices, and sectors—especially in response to **tariffs, trade policy, and global news events**. It uses statistical modeling, historical data analysis, and sentiment signals to help identify unstable market conditions.
 
-![Risk Radar Preview](assets/preview.png)
-
 ---
 
 ## 🚀 Features

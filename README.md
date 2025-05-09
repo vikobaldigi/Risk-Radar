@@ -116,7 +116,7 @@ This project is licensed under the [MIT License](LICENSE).
 ## 👤 Author
 
 **Vi Kovacevic**  
-[LinkedIn](https://www.linkedin.com/in/philipkovacevic) | [GitHub](https://github.com/vikobaldigi)
+[LinkedIn](https://www.linkedin.com/in/vi-kovacevic/) | [GitHub](https://github.com/vikobaldigi)
 
 ---
 

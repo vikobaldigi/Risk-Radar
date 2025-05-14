@@ -42,8 +42,9 @@ def get_history(ticker):
             ORDER BY date DESC
             LIMIT 100
         """), {"ticker": ticker})
-        # ✅ Fix: Convert row objects to dictionaries properly
-        history = [dict(zip(row.keys(), row)) for row in result]
+        history = []
+        for row in result:
+            history.append({col: val for col, val in zip(row.keys(), row)})
     return jsonify(history)
 
 @app.route("/api/volatility/<ticker>")

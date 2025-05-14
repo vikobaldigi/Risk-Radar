@@ -45,20 +45,15 @@ def get_history(ticker):
             """), {"ticker": ticker})
 
             rows = result.fetchall()
+            columns = result.keys()
 
-            if not rows:
-                return jsonify({"error": f"No data found for ticker '{ticker}'"}), 404
-
-            # ✅ Use keys() from ResultMetadata
-            keys = result.keys()
-            history = [dict(zip(keys, row)) for row in rows]
+            history = [dict(zip(columns, row)) for row in rows]
 
         return jsonify(history)
-    
+
     except Exception as e:
-        # Debug output to logs
         print(f"❌ ERROR in /api/history/{ticker}: {e}")
-        return jsonify({"error": "Internal server error", "details": str(e)}), 500
+        return jsonify({"error": str(e)}), 500
 
 @app.route("/api/volatility/<ticker>")
 def get_volatility(ticker):

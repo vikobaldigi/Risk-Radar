@@ -13,6 +13,12 @@ DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "data")
 @bp.route("/weights/<date>")
 def get_weights(date):
     path = os.path.join(DATA_DIR, f"weights_{date}.json")
+    print(f"📁 Attempting to serve: {path}")  # Add debug log
+
+    if not os.path.exists(path):
+        print(f"❌ File not found: {path}")
+        return jsonify({"error": "File not found"}), 404
+
     return send_file(path, mimetype="application/json")
 
 @bp.route("/tickers")

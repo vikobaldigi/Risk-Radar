@@ -1,5 +1,3 @@
-# main.py
-
 from flask import Flask, jsonify, request
 from sqlalchemy import create_engine, text
 import os
@@ -19,7 +17,7 @@ if not os.path.exists(DB_PATH):
     urllib.request.urlretrieve(DROPBOX_URL, DB_PATH)
     print("✅ Database downloaded.")
 
-# === Initialize Flask app ===
+# === Initialize Flask App and SQLite Engine ===
 app = Flask(__name__)
 engine = create_engine(f"sqlite:///{DB_PATH}", echo=False)
 
@@ -44,7 +42,8 @@ def get_history(ticker):
             ORDER BY date DESC
             LIMIT 100
         """), {"ticker": ticker})
-        history = [dict(row) for row in result]
+        # ✅ Fix: Convert row objects to dictionaries properly
+        history = [dict(zip(row.keys(), row)) for row in result]
     return jsonify(history)
 
 @app.route("/api/volatility/<ticker>")
@@ -66,6 +65,5 @@ def get_volatility(ticker):
 
     return jsonify(df[['date', 'volatility']].tail(30).to_dict(orient='records'))
 
-# === Run locally ===
 if __name__ == "__main__":
     app.run(debug=True)

@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Interactive Volatility Visualizer</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Interactive Volatility Visualizer</h1>
+      <div class="controls">
+        <label for="date-select">Select Date:</label>
+        <input type="date" id="date-select" value="2025-04-25">
+        <button id="update-btn">Update Visualization</button>
+      </div>
+    </header>
+    
+    <main>
+      <div class="visualization-container">
+        <svg id="viz"></svg>
+        <div id="tooltip" class="tooltip"></div>
+      </div>
+      <div class="legend">
+        <h3>Volatility Scale</h3>
+        <div id="color-scale"></div>
+      </div>
+    </main>
+  </div>
+  
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

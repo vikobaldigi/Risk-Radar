@@ -1,9 +1,71 @@
 # main.py
 
-from app import create_app
+from flask import Flask, jsonify, request
+from sqlalchemy import create_engine, text
+import os
+import urllib.request
+import pandas as pd
 
-app = create_app()
+# === Dropbox Config ===
+DB_FOLDER = "app/database"
+DB_FILE = "riskradar.db"
+DB_PATH = os.path.join(DB_FOLDER, DB_FILE)
+DROPBOX_URL = "https://www.dropbox.com/scl/fi/x2bgjbm1804rkj5d2izxy/riskradar.db?rlkey=ee0vfjkaf6i0c9dczqurdzfuv&st=boccvoqy&dl=1"
 
+# === Ensure database is downloaded ===
+if not os.path.exists(DB_PATH):
+    print("⬇️ Downloading riskradar.db from Dropbox...")
+    os.makedirs(DB_FOLDER, exist_ok=True)
+    urllib.request.urlretrieve(DROPBOX_URL, DB_PATH)
+    print("✅ Database downloaded.")
+
+# === Initialize Flask app ===
+app = Flask(__name__)
+engine = create_engine(f"sqlite:///{DB_PATH}", echo=False)
+
+@app.route("/")
+def home():
+    return jsonify({"message": "✅ RiskRadar API is running."})
+
+@app.route("/api/tickers")
+def get_tickers():
+    with engine.connect() as conn:
+        result = conn.execute(text("SELECT DISTINCT ticker FROM stock_data"))
+        tickers = [row[0] for row in result]
+    return jsonify(tickers)
+
+@app.route("/api/history/<ticker>")
+def get_history(ticker):
+    with engine.connect() as conn:
+        result = conn.execute(text("""
+            SELECT date, close
+            FROM stock_data
+            WHERE ticker = :ticker
+            ORDER BY date DESC
+            LIMIT 100
+        """), {"ticker": ticker})
+        history = [dict(row) for row in result]
+    return jsonify(history)
+
+@app.route("/api/volatility/<ticker>")
+def get_volatility(ticker):
+    window = int(request.args.get("window", 30))
+    with engine.connect() as conn:
+        df = pd.read_sql_query("""
+            SELECT date, close
+            FROM stock_data
+            WHERE ticker = :ticker
+            ORDER BY date ASC
+        """, conn, params={"ticker": ticker})
+    if df.empty or len(df) < window:
+        return jsonify({"error": "Not enough data to compute volatility"}), 400
+
+    df['return'] = df['close'].pct_change()
+    df['volatility'] = df['return'].rolling(window).std()
+    df = df.dropna()
+
+    return jsonify(df[['date', 'volatility']].tail(30).to_dict(orient='records'))
+
+# === Run locally ===
 if __name__ == "__main__":
-    # Starts Flask on http://localhost:5000
-    app.run(debug=True, port=5000)
+    app.run(debug=True)

@@ -2,81 +2,47 @@
 
 import os
 from sqlalchemy import create_engine, text
-from sqlalchemy.orm import sessionmaker
 
 # === CONFIGURATION ===
-
-# Find the correct database path
+# Dynamically locate the SQLite database
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 DATABASE_URL = f"sqlite:///{BASE_DIR}/app/database/riskradar.db"
 
-# Setup SQLAlchemy engine and session
+# Create the SQLAlchemy engine
 engine = create_engine(DATABASE_URL, echo=False)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# === FUNCTIONS ===
 
-def find_duplicates():
+def clean_duplicates():
     """
-    Find ticker/date duplicates.
+    1. Remove duplicate rows (identical ticker & date), keeping the first entry by rowid.
+    2. VACUUM the database to reclaim space.
+    3. Create a unique index on (ticker, date) to prevent future duplicates.
     """
-    session = SessionLocal()
-    try:
-        query = text("""
-            SELECT ticker, date, COUNT(*) as cnt
-            FROM stock_data
-            GROUP BY ticker, date
-            HAVING cnt > 1
-        """)
-        duplicates = session.execute(query).fetchall()
-        return duplicates
-    finally:
-        session.close()
-
-def delete_duplicates():
-    """
-    Keep only 1 record per ticker/date combination.
-    """
-    session = SessionLocal()
-    try:
-        # Find all duplicate ticker/date combos
-        duplicates = find_duplicates()
-        print(f"🔎 Found {len(duplicates)} duplicate ticker/date pairs.")
-
-        for ticker, date, count in duplicates:
-            # Find all IDs for that ticker/date
-            ids_query = text("""
-                SELECT id
+    # 1️⃣ Delete duplicates in a single transaction
+    with engine.begin() as conn:
+        result = conn.execute(text("""
+            DELETE FROM stock_data
+            WHERE rowid NOT IN (
+                SELECT MIN(rowid)
                 FROM stock_data
-                WHERE ticker = :ticker AND date = :date
-                ORDER BY id ASC
-            """)
-            rows = session.execute(ids_query, {"ticker": ticker, "date": date}).fetchall()
-            ids = [row[0] for row in rows]
+                GROUP BY ticker, date
+            );
+        """))
+        print(f"🗑️  Deleted {result.rowcount} duplicate rows.")
 
-            # Keep the first ID, delete the rest
-            ids_to_delete = ids[1:]
+    # 2️⃣ VACUUM and 3️⃣ create unique index
+    # VACUUM must run outside of an active transaction
+    with engine.connect() as conn:
+        conn.execute(text("VACUUM;"))
+        print("🧹  Database vacuumed.")
+        conn.execute(text("""
+            CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_ticker_date
+            ON stock_data (ticker, date);
+        """))
+        print("🔧  Created unique index on (ticker, date).")
 
-            if ids_to_delete:
-                # Build dynamic delete query
-                placeholders = ", ".join([str(id) for id in ids_to_delete])
-                delete_sql = f"""
-                    DELETE FROM stock_data
-                    WHERE id IN ({placeholders})
-                """
-                session.execute(text(delete_sql))
-
-        session.commit()
-        print("✅ Duplicates cleaned successfully!")
-
-    except Exception as e:
-        session.rollback()
-        print(f"❌ Error during duplicate cleanup: {e}")
-    finally:
-        session.close()
-
-# === RUN SCRIPT ===
 
 if __name__ == "__main__":
-    print("🧹 Connecting to RiskRadar database to clean duplicates...\n")
-    delete_duplicates()
+    print("🔍  Starting duplicate cleanup and optimization...")
+    clean_duplicates()
+    print("✅  Cleanup complete.")

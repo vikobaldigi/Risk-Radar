@@ -44,9 +44,11 @@ def get_history(ticker):
                 LIMIT 100
             """), {"ticker": ticker})
 
+            # Pull all results and column names
             rows = result.fetchall()
             columns = result.keys()
 
+            # Fix: zip column names with row values
             history = [dict(zip(columns, row)) for row in rows]
 
         return jsonify(history)

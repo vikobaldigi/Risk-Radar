@@ -21,6 +21,10 @@ if not os.path.exists(DB_PATH):
 app = Flask(__name__)
 engine = create_engine(f"sqlite:///{DB_PATH}", echo=False)
 
+# === Import and Register Blueprints ===
+from app.api.schema_api import bp as schema_bp
+app.register_blueprint(schema_bp)
+
 @app.route("/")
 def home():
     return jsonify({"message": "✅ RiskRadar API is running."})
@@ -44,7 +48,6 @@ def get_history(ticker):
                 LIMIT 100
             """), {"ticker": ticker})
 
-            # Properly unpack using result.keys()
             rows = result.fetchall()
             keys = result.keys()
             history = [dict(zip(keys, row)) for row in rows]

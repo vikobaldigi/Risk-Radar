@@ -34,18 +34,31 @@ def get_tickers():
 
 @app.route("/api/history/<ticker>")
 def get_history(ticker):
-    with engine.connect() as conn:
-        result = conn.execute(text("""
-            SELECT date, close
-            FROM stock_data
-            WHERE ticker = :ticker
-            ORDER BY date DESC
-            LIMIT 100
-        """), {"ticker": ticker})
-        history = []
-        for row in result:
-            history.append({col: val for col, val in zip(row.keys(), row)})
-    return jsonify(history)
+    try:
+        with engine.connect() as conn:
+            result = conn.execute(text("""
+                SELECT date, close
+                FROM stock_data
+                WHERE ticker = :ticker
+                ORDER BY date DESC
+                LIMIT 100
+            """), {"ticker": ticker})
+
+            rows = result.fetchall()
+
+            if not rows:
+                return jsonify({"error": f"No data found for ticker '{ticker}'"}), 404
+
+            # ✅ Use keys() from ResultMetadata
+            keys = result.keys()
+            history = [dict(zip(keys, row)) for row in rows]
+
+        return jsonify(history)
+    
+    except Exception as e:
+        # Debug output to logs
+        print(f"❌ ERROR in /api/history/{ticker}: {e}")
+        return jsonify({"error": "Internal server error", "details": str(e)}), 500
 
 @app.route("/api/volatility/<ticker>")
 def get_volatility(ticker):

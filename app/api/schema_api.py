@@ -2,11 +2,11 @@
 
 from flask import Blueprint, jsonify
 from sqlalchemy import text
-from .. import engine  # Assumes engine is exposed in app/__init__.py
+from app.database import engine  # ✅ Correct import
 
 bp = Blueprint("schema_api", __name__)
 
-@bp.route("/api/schema")
+@bp.route("/schema", methods=["GET"])
 def get_schema():
     try:
         with engine.connect() as conn:

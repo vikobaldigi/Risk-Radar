@@ -37,24 +37,22 @@ def get_history(ticker):
     try:
         with engine.connect() as conn:
             result = conn.execute(text("""
-                SELECT date, close
+                SELECT date, open, high, low, close, volume
                 FROM stock_data
                 WHERE ticker = :ticker
                 ORDER BY date DESC
                 LIMIT 100
             """), {"ticker": ticker})
 
-            # Pull all results and column names
+            # Properly unpack using result.keys()
             rows = result.fetchall()
-            columns = result.keys()
-
-            # Fix: zip column names with row values
-            history = [dict(zip(columns, row)) for row in rows]
+            keys = result.keys()
+            history = [dict(zip(keys, row)) for row in rows]
 
         return jsonify(history)
 
     except Exception as e:
-        print(f"❌ ERROR in /api/history/{ticker}: {e}")
+        print(f"❌ Error in get_history: {e}")
         return jsonify({"error": str(e)}), 500
 
 @app.route("/api/volatility/<ticker>")
